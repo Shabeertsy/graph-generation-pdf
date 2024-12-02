@@ -1,0 +1,97 @@
+# Python Bytecode files
+*.py[cod]
+__pycache__/
+
+# Virtual Environment
+venv/
+.env/
+.venv/
+
+# Django Migration files
+*/migrations/*
+
+# Database files
+db.sqlite3
+*.sqlite3
+*.db
+
+# Django Logs
+*.log
+
+# Django media and static files
+/media/
+/static/
+
+# Test and coverage reports
+.coverage
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+*.pot
+*.pyc
+*.pyo
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.sublime-workspace
+*.sublime-project
+
+# MacOS specific files
+.DS_Store
+
+# Windows specific files
+Thumbs.db
+ehthumbs.db
+
+# PyCharm specific
+.idea/
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# Miscellaneous
+*.pot
+*.pyc
+*.pyo
+
+# Environment configuration files
+.env
+
+# Compiled object files
+*.o
+*.a
+*.so
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+*.eggs/
+.eggs/
+
+# Deployment files
+instance/
+*.log
+
+# SASS/CSS generated files
+*.scssc
+
+# Docker files
+docker-compose.override.yml
+.docker/
+
+# Coverage tools
+.coverage
+coverage.xml
+
+# Heroku
+*.env
+
+/certificates/
+/static/    
