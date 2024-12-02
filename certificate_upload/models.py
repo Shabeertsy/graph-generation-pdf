@@ -38,6 +38,7 @@ class ActivityCertificate(BaseClass):
     ],null=True,blank=True)
     mark=models.FloatField(null=True,blank=True)
     pdf_text=models.TextField(null=True,blank=True)
+    is_approved=models.BooleanField(default=False)
 
 
     def __str__(self):

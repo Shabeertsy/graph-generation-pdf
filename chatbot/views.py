@@ -41,7 +41,7 @@ class PDFUploadView(APIView):
         pdf_document.save()
 
 
-GOOGLE_API_KEY='AIzaSyDEV_jYzVybr77UimtNLrTKoyO-DF9Z_3s'
+GOOGLE_API_KEY=''
 
 class ChatbotAPIView(APIView):
     def post(self, request):
