@@ -10,3 +10,6 @@ class ProfileAdmin(admin.ModelAdmin):
     ordering = ('-id',)
 
 admin.site.register(Profile, ProfileAdmin)
+
+admin.site.register(Student)
+admin.site.register(Parent) 

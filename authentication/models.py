@@ -56,6 +56,7 @@ class Student(BaseClass):
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     pincode = models.CharField(max_length=10)
+    total_activity_marks=models.FloatField(default=0)
 
     def __str__(self):
         return f"{self.profile.email} - {self.roll_number}"
