@@ -46,8 +46,7 @@ class ActivityCertificateSerializer(serializers.ModelSerializer):
                     activity_certificate.save()
                     
                     student = activity_certificate.student
-                    total_marks = ActivityCertificate.objects.filter(
-                        student=student).aggregate(Sum('mark'))['mark__sum'] or 0
+                    total_marks = ActivityCertificate.objects.filter(student=student).aggregate(Sum('mark'))['mark__sum'] or 0
                     student.total_activity_marks = total_marks
                     student.save()
                 else:
