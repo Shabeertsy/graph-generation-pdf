@@ -12,7 +12,7 @@ from decouple import config
 from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import PDFDocumentSerializer
 import json
-
+from decouple import config
 
 class PDFUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
@@ -41,7 +41,7 @@ class PDFUploadView(APIView):
         pdf_document.save()
 
 
-GOOGLE_API_KEY='AIzaSyDEV_jYzVybr77UimtNLrTKoyO-DF9Z_3s'
+GOOGLE_API_KEY= config('API_KEY') if config('API_KEY') else ''
 
 class ChatbotAPIView(APIView):
     def post(self, request):
