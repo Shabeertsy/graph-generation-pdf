@@ -10,10 +10,10 @@ from django.contrib.auth import authenticate
 
 
 ## model imports
-from .models import Profile,Student,Parent
+from .models import Profile,Student,Parent,Teacher
 
 ## serializer imports
-from .serializers import StudentSerializer,ParentSerializer,ProfileSerializer
+from .serializers import StudentSerializer,ParentSerializer,ProfileSerializer,TeacherSerializer
 
 ## Other imports
 from .permissions import *
@@ -98,7 +98,10 @@ class StudentRegistrationAPIView(APIView):
             'address': request.data.get('address'),
             'city': request.data.get('city'), 
             'state': request.data.get('state'),
-            'pincode': request.data.get('pincode')
+            'pincode': request.data.get('pincode'),
+            'programme': request.data.get('programme'),
+            'department': request.data.get('department'),
+            'year': request.data.get('year'),
         }
         print(student_data)
         student_serializer = StudentSerializer(data=student_data)
@@ -157,7 +160,10 @@ class ParentRegistrationAPIView(APIView):
             'address': request.data.get('address'),
             'city': request.data.get('city'),
             'state': request.data.get('state'),
-            'pincode': request.data.get('pincode')
+            'pincode': request.data.get('pincode'),
+            'department':request.data.get('department'),
+            'programme':request.data.get('programme'),
+            'year':request.data.get('year')
         }
 
         # Try to get existing parent object or create new one
@@ -179,4 +185,71 @@ class ParentRegistrationAPIView(APIView):
         }
 
         return Response({'data': data}, status=status.HTTP_201_CREATED)
+    
+
+##teacher registration
+class TeacherRegistrationAPIView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'message': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        profile_data = {
+            'email': email,
+            'password': request.data.get('password'),
+            'role': RoleChoices.TEACHER,
+            'phone': request.data.get('phone'),
+            'username': request.data.get('email') 
+        }
+
+        # Check if email exists
+        if Profile.objects.filter(email=profile_data['email']).exists():
+            return Response({'message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+    
+        # Create teacher profile
+        teacher_profile = Profile.objects.create_user(
+            **profile_data,
+        
+        )
+
+        teacher_data = {
+            'profile': teacher_profile.id,
+            'programme': request.data.get('programme'), 
+            'year': request.data.get('year'),
+            'department': request.data.get('department'),
+            'designation': request.data.get('designation')
+        }
+        print(teacher_data)
+        teacher_serializer = TeacherSerializer(data=teacher_data)
+        if not teacher_serializer.is_valid():
+            teacher_profile.delete()
+            return Response(teacher_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        teacher = teacher_serializer.save()
+        # Generate token
+        # token = RefreshToken.for_user(profile)
+        
+        data = {
+                # 'token': str(token.access_token),
+                # 'refresh': str(token),
+            'teacher': teacher_serializer.data
+        }
+
+        return Response({'data': data}, status=status.HTTP_201_CREATED)
+    
+##student details for teacher
+class StudentsDetailsAPIView(APIView):
+    def get(self, request):
+        year=request.GET.get('year')
+        programme=request.GET.get('programme')
+        students=Student.objects.all()
+        if year :
+            students=students.filter(year=year)
+        if programme:
+            students=students.filter(programme=programme)
+        if students:
+            return Response({'message':'Student found'})
+        else:
+            return Response({'message':'Student not found'})
+
 

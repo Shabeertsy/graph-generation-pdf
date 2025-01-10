@@ -12,4 +12,5 @@ class ProfileAdmin(admin.ModelAdmin):
 admin.site.register(Profile, ProfileAdmin)
 
 admin.site.register(Student)
+admin.site.register(Teacher) 
 admin.site.register(Parent) 

@@ -56,6 +56,9 @@ class Student(BaseClass):
     city = models.CharField(max_length=100)
     state = models.CharField(max_length=100)
     pincode = models.CharField(max_length=10)
+    department=models.CharField(max_length=100)
+    programme=models.CharField(max_length=100)
+    year=models.CharField(max_length=100)
     total_activity_marks=models.FloatField(default=0)
 
     def __str__(self):
@@ -90,3 +93,16 @@ class Parent(BaseClass):
         verbose_name = 'Parent'
         verbose_name_plural = 'Parents'
 
+class Teacher(BaseClass):
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name='Teacher')
+    programme=models.CharField(max_length=25,null=True,blank=True)
+    year=models.CharField(max_length=25,null=True,blank=True)
+    department=models.CharField(max_length=25,null=True,blank=True)
+    designation=models.CharField(max_length=25,null=True,blank=True)
+    def __str__(self):
+        return f"{self.profile.email} - {self.programme}"
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Teacher'
+        verbose_name_plural = 'Teachers'

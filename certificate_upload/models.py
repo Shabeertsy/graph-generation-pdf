@@ -13,7 +13,7 @@ class Certificate(BaseClass):
 
 
     def __str__(self):
-        return f"Certificate for {self.student_name}"
+        return f"Certificate for {self.student.profile.first_name}"
 
 
 

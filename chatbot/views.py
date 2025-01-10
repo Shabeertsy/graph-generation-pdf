@@ -13,7 +13,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .serializers import PDFDocumentSerializer
 import json
 from decouple import config
-
+from django.shortcuts import get_object_or_404
+from certificate_upload.models import Certificate
 class PDFUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
@@ -46,7 +47,8 @@ GOOGLE_API_KEY= config('API_KEY') if config('API_KEY') else ''
 class ChatbotAPIView(APIView):
     def post(self, request):
         data = request.data
-        doc = PDFDocument.objects.filter().first()
+        document_id=request.data.get('document_id')
+        doc = get_object_or_404(PDFDocument,id=document_id)
         question = data.get('question')
 
         prompt = f"""
@@ -56,6 +58,44 @@ class ChatbotAPIView(APIView):
         
         Document Content:
         {doc.extracted_text}
+        
+        Please provide a clear and concise answer based on the document content above.
+        """
+        
+        # Using Gemini
+        genai.configure(api_key=GOOGLE_API_KEY)
+        model = genai.GenerativeModel('gemini-pro')
+        try:
+            response = model.generate_content(prompt)
+            answer = response.text.strip()
+            print(answer)
+            
+            return Response({
+                'answer': answer,
+                'status': 'success'
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                'message': 'Error processing your request',
+                'error': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChatbotTeachersAPIView(APIView):
+    def post(self, request):
+        data = request.data
+        document_id=request.data.get('document_id')
+        doc = get_object_or_404(Certificate,id=document_id)
+        question = data.get('question')
+
+        prompt = f"""
+        Please analyze the following document and answer the question.
+        
+        Question: {question}
+        
+        Document Content:
+        {doc.grades}
         
         Please provide a clear and concise answer based on the document content above.
         """

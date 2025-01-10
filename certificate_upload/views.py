@@ -6,7 +6,10 @@ from rest_framework import status
 from rest_framework.response import Response 
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from rest_framework.generics import ListAPIView
+from authentication.serializers import StudentSerializer
+from authentication.models import Student
+from django.shortcuts import get_object_or_404
 # Local imports
 from .serializers import CertificateSerializer
 from chatbot.utils import gemini_ai 
@@ -53,7 +56,8 @@ class CertificateUploadView(APIView):
             "percentage": "",
             "credits": "",
             "grade": "",
-            "status": ""
+            "status": "",
+            "sgpa":""
         }
         """
 
@@ -123,3 +127,42 @@ class CertificateDeleteView(APIView):
 
 
 
+class ListCertificateView(ListAPIView):
+    serializer_class=StudentSerializer
+
+    def get_queryset(self):
+        year=self.request.GET.get('year')
+        programme=self.request.GET.get('programme')
+        department=self.request.GET.get('department')
+        queryset=Student.objects.all()
+        if year :
+            queryset=queryset.filter(year = year)
+        if programme:
+            queryset=queryset.filter(programme = programme)
+        if department:
+            queryset=queryset.filter(department = department)
+        return queryset
+    
+     
+class GetCertificate_gradecard(APIView):
+    serializer_class=CertificateSerializer
+    serializer_class2=ActivityCertificateSerializer
+    def get(self,request):
+        student_id=request.GET.get('student_id')
+        certificate=Certificate.objects.filter(student__id=student_id)
+        activity_certificate=ActivityCertificate.objects.filter(student__id=student_id)
+
+        certificate_serializer=self.serializer_class(certificate,many=True)
+        activity_certificate_serializer=self.serializer_class2(activity_certificate,many=True)
+        return Response ({'certificate':certificate_serializer.data,'activity_certificate':activity_certificate_serializer.data})
+    
+    
+class MarkAdd(APIView):
+    def post(self,request):
+        student_id=request.data.get('student_id')
+        print(student_id)
+        mark=request.data.get('mark')
+        student=get_object_or_404(Student,id=student_id)
+        student.total_activity_marks=mark
+        student.save()
+        return Response({'message':'marks added successfully'},status=200)
