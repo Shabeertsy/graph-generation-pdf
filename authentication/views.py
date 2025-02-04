@@ -125,66 +125,52 @@ class StudentRegistrationAPIView(APIView):
 class ParentRegistrationAPIView(APIView):
     def post(self, request):
         email = request.data.get('email')
-        phone = request.data.get('phone')
-        
+        if not email:
+            return Response({'message': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        profile_data = {
+            'email': email,
+            'password': request.data.get('password'),
+            'role': RoleChoices.PARENT,
+            'phone': request.data.get('phone'),
+            'username': email
+        }
+
+        # Check if email already exists
+        if Profile.objects.filter(email=profile_data['email']).exists():
+            return Response({'message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Create parent profile
         try:
-            parent_profile = Profile.objects.get(
-                Q(email=email) | Q(phone=phone),
-                role=RoleChoices.PARENT
-            )
-            
-            # Update existing parent profile with new details
-            parent_profile.first_name = request.data.get('first_name', parent_profile.first_name)
-            parent_profile.last_name = request.data.get('last_name', parent_profile.last_name)
-            if request.data.get('password'):
-                parent_profile.set_password(request.data.get('password'))
-            parent_profile.save()
-
-        except Profile.DoesNotExist:
-            # Create new parent profile if doesn't exist
-            profile_data = {
-                'email': email,
-                'password': request.data.get('password'),
-                'first_name': request.data.get('first_name'),
-                'last_name': request.data.get('last_name'),
-                'phone': phone,
-                'role': RoleChoices.PARENT,
-                'username': email
-            }
             parent_profile = Profile.objects.create_user(**profile_data)
+        except Exception as e:
+            return Response({'message': f'Error creating profile: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Update or create parent details
         parent_data = {
             'profile': parent_profile.id,
+            'first_name': request.data.get('first_name'),
+            'last_name': request.data.get('last_name'),
+            'programme': request.data.get('programme'),
+            'department': request.data.get('department'),
+            'year': request.data.get('year'),
             'occupation': request.data.get('occupation'),
             'address': request.data.get('address'),
             'city': request.data.get('city'),
             'state': request.data.get('state'),
             'pincode': request.data.get('pincode'),
-            'department':request.data.get('department'),
-            'programme':request.data.get('programme'),
-            'year':request.data.get('year')
+            'relationship': request.data.get('relationship'),
         }
 
-        # Try to get existing parent object or create new one
-        try:
-            parent = Parent.objects.get(profile=parent_profile)
-            parent_serializer = ParentSerializer(parent, data=parent_data)
-        except Parent.DoesNotExist:
-            parent_serializer = ParentSerializer(data=parent_data)
-
+        # Serialize and validate data
+        parent_serializer = ParentSerializer(data=parent_data)
         if not parent_serializer.is_valid():
-            if parent_profile._state.adding:  
-                parent_profile.delete()
+            parent_profile.delete()  # Rollback if validation fails
             return Response(parent_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        parent = parent_serializer.save()
-        
-        data = {
-            'parent': parent_serializer.data
-        }
 
-        return Response({'data': data}, status=status.HTTP_201_CREATED)
+        # Save parent data
+        parent_serializer.save()
+
+        return Response({'message': 'Parent registered successfully'}, status=status.HTTP_201_CREATED)
     
 
 ##teacher registration

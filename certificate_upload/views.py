@@ -106,8 +106,8 @@ class CertificateListView(APIView):
 
 ## Function to get a single certificate
 class CertificateDetailView(APIView):
-    def get(self,request,pk):
-        certificate=Certificate.objects.get(id=pk)
+    def get(self,request,uuid):
+        certificate=Certificate.objects.get(uuid=uuid)
         serializer=CertificateSerializer(certificate)
         if serializer:
             return Response(serializer.data,status=status.HTTP_200_OK)
