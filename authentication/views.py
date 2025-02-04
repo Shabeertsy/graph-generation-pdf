@@ -57,64 +57,85 @@ class ChangePassword(APIView):
 
 
 ## student registration
+
 class StudentRegistrationAPIView(APIView):
     def post(self, request):
+        # Extract fields from the request data
         email = request.data.get('email')
-        if not email:
-            return Response({'message': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
-            
-        profile_data = {
-            'email': email,
-            'password': request.data.get('password'),
-            'role': RoleChoices.STUDENT,
-            'phone': request.data.get('phone'),
-            'username': request.data.get('email') 
-        }
+        password = request.data.get('password')
+        phone = request.data.get('phone')
+        father_email = request.data.get('father_email')
+        father_phone = request.data.get('father_phone')
+        roll_number = request.data.get('roll_number')
+        date_of_birth = request.data.get('date_of_birth')
+        address = request.data.get('address')
+        city = request.data.get('city')
+        state = request.data.get('state')
+        pincode = request.data.get('pincode')
+        programme = request.data.get('programme')
+        department = request.data.get('department')
+        year = request.data.get('year')
 
-        # Check if email exists
-        if Profile.objects.filter(email=profile_data['email']).exists():
+        # Check for missing mandatory fields
+        if not email or not password or not phone or not roll_number or not date_of_birth:
+            return Response({'message': 'Email, password, phone, roll number, and date of birth are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if email already exists
+        if Profile.objects.filter(email=email).exists():
             return Response({'message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Create father profile if father_email is provided
         father = None
-        if father_email := request.data.get('father_email'):
-            father, _ = Profile.objects.get_or_create(
+        if father_email:
+            father, created = Profile.objects.get_or_create(
                 email=father_email,
                 defaults={
                     'role': RoleChoices.PARENT,
-                    'phone': request.data.get('father_phone'),
+                    'phone': father_phone,
                     'username': father_email
                 }
             )
-        # Create student profile
-        student_profile = Profile.objects.create_user(
-            **profile_data,
-            father=father
-        )
+            if not created:  # If father profile exists but data is incomplete, return error
+                return Response({'message': 'Father profile already exists with the provided email.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Create student profile
+        profile_data = {
+            'email': email,
+            'password': password,
+            'role': RoleChoices.STUDENT,
+            'phone': phone,
+            'username': email  # Username is the same as email here
+        }
+        try:
+            student_profile = Profile.objects.create_user(**profile_data, father=father)
+        except Exception as e:
+            return Response({'message': f'Error creating student profile: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Prepare student-specific data
         student_data = {
             'profile': student_profile.id,
-            'roll_number': request.data.get('roll_number'),
-            'date_of_birth': request.data.get('date_of_birth'),
-            'address': request.data.get('address'),
-            'city': request.data.get('city'), 
-            'state': request.data.get('state'),
-            'pincode': request.data.get('pincode'),
-            'programme': request.data.get('programme'),
-            'department': request.data.get('department'),
-            'year': request.data.get('year'),
+            'roll_number': roll_number,
+            'date_of_birth': date_of_birth,
+            'address': address,
+            'city': city,
+            'state': state,
+            'pincode': pincode,
+            'programme': programme,
+            'department': department,
+            'year': year,
         }
-        print(student_data)
+
+        # Serialize student data
         student_serializer = StudentSerializer(data=student_data)
         if not student_serializer.is_valid():
-            student_profile.delete()
+            student_profile.delete()  # Rollback profile creation if serializer fails
             return Response(student_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save the student data
         student = student_serializer.save()
-        # Generate token
-        # token = RefreshToken.for_user(profile)
-        
+
+        # Return successful response with student data
         data = {
-                # 'token': str(token.access_token),
-                # 'refresh': str(token),
             'student': student_serializer.data
         }
 
