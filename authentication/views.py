@@ -52,6 +52,7 @@ class ChangePassword(APIView):
         if user.check_password(password):
             new_password=request.data.get('new_password')
             user.set_password(new_password)
+            user.save()
             return Response({'message':'password changed successfully'},status=status.HTTP_200_OK)
         return Response({'message':'password doesnt match'},status=status.HTTP_400_BAD_REQUEST)
 
