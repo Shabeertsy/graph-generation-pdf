@@ -7,12 +7,15 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ['email', 'role', 'phone']
 
 class StudentSerializer(serializers.ModelSerializer):
+    student_name=serializers.SerializerMethodField()
 
     class Meta:
         model = Student
         fields = ['profile', 'roll_number', 'date_of_birth',
-                 'blood_group', 'address', 'city', 'state', 'pincode','department','programme','year']
-
+                 'blood_group', 'address', 'city', 'state', 'pincode','department','programme','year','student_name']
+        
+    def get_student_name(self,obj):
+        return f'{obj.profile.first_name }  { obj.profile.last_name}'
 
 class ParentSerializer(serializers.ModelSerializer):
 

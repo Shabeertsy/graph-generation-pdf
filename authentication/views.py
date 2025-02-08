@@ -63,6 +63,7 @@ class StudentRegistrationAPIView(APIView):
     def post(self, request):
         # Extract fields from the request data
         email = request.data.get('email')
+        name = request.data.get('name')
         password = request.data.get('password')
         phone = request.data.get('phone')
         father_email = request.data.get('father_email')
@@ -105,7 +106,10 @@ class StudentRegistrationAPIView(APIView):
             'password': password,
             'role': RoleChoices.STUDENT,
             'phone': phone,
-            'username': email  # Username is the same as email here
+            'username': email ,
+            'name': name,
+             
+              # Username is the same as email here
         }
         try:
             student_profile = Profile.objects.create_user(**profile_data, father=father)

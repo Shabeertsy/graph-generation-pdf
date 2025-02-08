@@ -10,6 +10,7 @@ from rest_framework.generics import ListAPIView
 from authentication.serializers import StudentSerializer
 from authentication.models import Student
 from django.shortcuts import get_object_or_404
+from authentication.permissions import *
 # Local imports
 from .serializers import CertificateSerializer
 from chatbot.utils import gemini_ai 
@@ -72,8 +73,13 @@ class CertificateUploadView(APIView):
 
 ## Function to upload activity certificates
 class UploadActivityCertificates(APIView):
+    permission_classes=[IsStudent]
     def post(self,request,*args,**kwargs):
-        serializer=ActivityCertificateSerializer(data=request.data)
+        print("Received Data:", request.data)  # Debugging
+        data=request.data.copy()
+        student=get_object_or_404(Student,profile__id=request.user.id)
+        data['student']=student.id
+        serializer=ActivityCertificateSerializer(data=data)
         if serializer.is_valid():
             activity_certificate=serializer.save()
             
@@ -86,8 +92,10 @@ class UploadActivityCertificates(APIView):
                 
             activity_certificate.extracted_text = text
             activity_certificate.save()
-            
+    
             return Response(ActivityCertificateSerializer(activity_certificate).data,status=status.HTTP_201_CREATED)
+        else:
+            print(serializer.errors)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -166,3 +174,5 @@ class MarkAdd(APIView):
         student.total_activity_marks=mark
         student.save()
         return Response({'message':'marks added successfully'},status=200)
+
+
