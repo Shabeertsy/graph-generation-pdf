@@ -166,3 +166,44 @@ class MarkAdd(APIView):
         student.total_activity_marks=mark
         student.save()
         return Response({'message':'marks added successfully'},status=200)
+
+
+## acitvity certificates
+class ActivityCertificatesListView(APIView):
+    def get(self,request):
+        student_id=request.query_params.get('student_id')
+        certificate=ActivityCertificate.objects.filter(student__id=student_id)
+        serializer=ActivityCertificateSerializer(certificate,many=True)
+        if serializer:
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response({'message':'Certificates not found'},status=status.HTTP_400_BAD_REQUEST)
+
+
+class ActivityCertificateDetailView(APIView):
+    def get(self,request):
+        certificate_id=request.query_params.get('certificate_id')
+        certificate=ActivityCertificate.objects.get(id=certificate_id)
+        serializer=ActivityCertificateSerializer(certificate)
+        if serializer:
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        return Response({'message':'Certificate not found'},status=status.HTTP_400_BAD_REQUEST)
+    
+
+from django.db.models import Sum, Count
+class AcademicGraph(APIView):
+    def get(self,request):
+        student_id=request.query_params.get('student_id')
+        certificate=Certificate.objects.filter(student__id=student_id)
+        academic_certificate=Certificate.objects.filter(student__id=student_id)
+        grades=certificate.first().grades if certificate else 'certificate not uploaded'
+
+        activity_data = ActivityCertificate.objects.filter(student__id=student_id).aggregate(
+            total_marks=Sum('mark'), 
+            certificate_count=Count('id') 
+        )
+
+        total_marks = activity_data['total_marks'] or 0
+        certificate_count = activity_data['certificate_count']
+    
+            
+        return Response({'grades':grades,'total_marks':total_marks,'certificate_count':certificate_count,'academic_certificate':academic_certificate},status=status.HTTP_200_OK)
