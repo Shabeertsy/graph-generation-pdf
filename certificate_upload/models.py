@@ -12,9 +12,6 @@ class Certificate(BaseClass):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
 
-    def __str__(self):
-        return f"Certificate for {self.student.profile.first_name}"
-
 
 
 class ActivityCertificate(BaseClass):
