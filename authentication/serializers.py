@@ -15,7 +15,7 @@ class StudentSerializer(serializers.ModelSerializer):
                  'blood_group', 'address', 'city', 'state', 'pincode','department','programme','year','student_name']
         
     def get_student_name(self,obj):
-        return f'{obj.profile.first_name }  { obj.profile.last_name}'
+        return f'{obj.profile.first_name } '
 
 class ParentSerializer(serializers.ModelSerializer):
 

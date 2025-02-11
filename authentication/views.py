@@ -100,6 +100,7 @@ class StudentRegistrationAPIView(APIView):
             if not created:  # If father profile exists but data is incomplete, return error
                 return Response({'message': 'Father profile already exists with the provided email.'}, status=status.HTTP_400_BAD_REQUEST)
 
+        print('name',name)
         # Create student profile
         profile_data = {
             'email': email,
@@ -107,7 +108,7 @@ class StudentRegistrationAPIView(APIView):
             'role': RoleChoices.STUDENT,
             'phone': phone,
             'username': email ,
-            'name': name,
+            'first_name': name,
              
               # Username is the same as email here
         }
