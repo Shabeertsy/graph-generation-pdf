@@ -7,7 +7,7 @@ import re
 class CertificateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Certificate
-        fields = ['id', 'student', 'certificate_pdf', 'grades', 'uploaded_at']
+        fields = ['id','uuid' ,'student', 'certificate_pdf', 'grades', 'uploaded_at']
 
 
 class ActivityCertificateSerializer(serializers.ModelSerializer):
