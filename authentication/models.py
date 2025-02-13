@@ -24,7 +24,7 @@ class RoleChoices(models.TextChoices):
 ## Profile model 
 class Profile(AbstractUser):
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS = ['username']
 
     username = models.CharField(max_length=150, null=True, blank=True)
     first_name = models.CharField(max_length=150, null=True, blank=True)

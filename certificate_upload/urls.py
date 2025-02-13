@@ -11,4 +11,8 @@ urlpatterns = [
     path('listStudents/',views.ListCertificateView.as_view(),name='liststudents'),
     path('certificate-gradecard/',views.GetCertificate_gradecard.as_view(),name='certificate-gradecard'),
     path('add-marks/',views.MarkAdd.as_view(),name='add-marks'),
+    path('list-activity-certificates/',views.ActivityCertificatesListView.as_view(),name='list-activity-certificates'),
+    path('activity-certificate-detail/',views.ActivityCertificateDetailView.as_view(),name='activity-certificate-detai'),
+
+    path('academic-graph/',views.AcademicGraph.as_view(),name='academic-graph'),
 ]
