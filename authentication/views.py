@@ -174,8 +174,8 @@ class ParentRegistrationAPIView(APIView):
         }
 
         # Check if email already exists
-        # if Profile.objects.filter(email=profile_data['email']).exists():
-        #     return Response({'message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        if Profile.objects.filter(email=profile_data['email']).exists():
+            return Response({'message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create parent profile
         try:
