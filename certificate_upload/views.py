@@ -219,6 +219,7 @@ class AcademicGraph(APIView):
         student_id=request.query_params.get('student_id')
         certificate=Certificate.objects.filter(student__id=student_id)
         academic_certificate=Certificate.objects.filter(student__id=student_id)
+        serializer=CertificateSerializer(certificate,many=True)
         grades=certificate.first().grades if certificate else 'certificate not uploaded'
 
         activity_data = ActivityCertificate.objects.filter(student__id=student_id).aggregate(
@@ -228,6 +229,6 @@ class AcademicGraph(APIView):
 
         total_marks = activity_data['total_marks'] or 0
         certificate_count = activity_data['certificate_count']
-        return Response({'grades':grades,'total_marks':total_marks,'certificate_count':certificate_count,'academic_certificate':academic_certificate},status=status.HTTP_200_OK)
+        return Response({'grades':grades,'total_marks':total_marks,'certificate_count':certificate_count,'academic_certificate':serializer.data},status=status.HTTP_200_OK)
     
             
