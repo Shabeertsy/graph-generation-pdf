@@ -62,7 +62,7 @@ class CertificateUploadView(APIView):
         }
         """
 
-        prompt=f"from {text} fetch details in this format {data_format} must be in json format and the data must be accurate "
+        prompt=f"from {text} fetch details in this format {data_format} must be in json format and the data must be accurate no addition comments or text not be there"
         grade_data=gemini_ai(prompt)
         if grade_data['flag']:
             certificate.grades = grade_data['data']
@@ -228,6 +228,6 @@ class AcademicGraph(APIView):
 
         total_marks = activity_data['total_marks'] or 0
         certificate_count = activity_data['certificate_count']
+        return Response({'grades':grades,'total_marks':total_marks,'certificate_count':certificate_count,'academic_certificate':academic_certificate},status=status.HTTP_200_OK)
     
             
-        return Response({'grades':grades,'total_marks':total_marks,'certificate_count':certificate_count,'academic_certificate':academic_certificate},status=status.HTTP_200_OK)
