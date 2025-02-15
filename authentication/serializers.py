@@ -11,7 +11,7 @@ class StudentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Student
-        fields = ['profile', 'roll_number', 'date_of_birth',
+        fields = ['id','uuid','profile', 'roll_number', 'date_of_birth',
                  'blood_group', 'address', 'city', 'state', 'pincode','department','programme','year','student_name']
         
     def get_student_name(self,obj):

@@ -32,12 +32,22 @@ class LoginAPIView(APIView):
 
         token=RefreshToken.for_user(user)
         role=user.role
-        data={
+        if role==RoleChoices.STUDENT:
+            student=Student.objects.get(profile=user)
+            data={
+                'token':str(token.access_token),
+                'refresh':str(token),
+                'role':role,
+                'student_id':StudentSerializer(student).data.get('id')
+            }
+        else:
+
+            data={
             'token':str(token.access_token),
             'refresh':str(token),
             'role':role
-        }
-
+            }
+       
         return Response({'data':data},status=status.HTTP_200_OK)
 
 
@@ -164,8 +174,8 @@ class ParentRegistrationAPIView(APIView):
         }
 
         # Check if email already exists
-        if Profile.objects.filter(email=profile_data['email']).exists():
-            return Response({'message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+        # if Profile.objects.filter(email=profile_data['email']).exists():
+        #     return Response({'message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create parent profile
         try:

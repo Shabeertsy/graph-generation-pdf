@@ -5,3 +5,4 @@ from .models import *
 
 admin.site.register(Certificate)
 admin.site.register(ActivityCertificate)
+admin.site.register(CertificateMarks)

@@ -164,16 +164,32 @@ class GetCertificate_gradecard(APIView):
         activity_certificate_serializer=self.serializer_class2(activity_certificate,many=True)
         return Response ({'certificate':certificate_serializer.data,'activity_certificate':activity_certificate_serializer.data})
     
-    
+from .models import CertificateMarks
 class MarkAdd(APIView):
     def post(self,request):
-        student_id=request.data.get('student_id')
-        print(student_id)
+        certificate_id=request.data.get('certificate_id')
         mark=request.data.get('mark')
-        student=get_object_or_404(Student,id=student_id)
-        student.total_activity_marks=mark
-        student.save()
+        if not mark or not certificate_id:
+            return Response({'message':'certificate_id and mark are required'},status=400)
+        
+        certificate=get_object_or_404(ActivityCertificate,id=certificate_id)
+        certificate_mark=CertificateMarks(certifcate=certificate,marks=mark,status=True)
+        certificate_mark.save()
+        certificate.mark=mark
+        certificate.save()
+        certificate.student.total_activity_marks+=float(mark)
+        certificate.student.save()
         return Response({'message':'marks added successfully'},status=200)
+
+
+from .serializers import CertificateMarksSerializer
+class ActivityMarksAPIView(APIView):
+    def get(self,request):
+        student_id=request.data.get('student_id')
+        mark_list=CertificateMarks.objects.filter(certifcate__student__id=student_id)
+        serializer=CertificateMarksSerializer(mark_list,many=True)
+        return Response(serializer.data,status=200)
+      
 
 
 ## acitvity certificates
