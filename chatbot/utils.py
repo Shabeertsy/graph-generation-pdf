@@ -3,22 +3,30 @@ import google.generativeai as genai
 import json
 
 
-GOOGLE_API_KEY='AIzaSyDEV_jYzVybr77UimtNLrTKoyO-DF9Z_3s'
-
-def gemini_ai(prompt,model='gemini-pro',json_format=True):
-    # print(prompt)
-
-    ## Using Gemini
+GOOGLE_API_KEY='AIzaSyCor6MYCiblHwiuJQgMX9c4U_18T6kNlxE'
+def gemini_ai(prompt, model='gemini-pro', json_format=True, max_retries=10):
     genai.configure(api_key=GOOGLE_API_KEY)
     model = genai.GenerativeModel(model)
+
     try:
         response = model.generate_content(prompt)
-        story=response.text
+        story = response.text
+
+
         if json_format:
-            story_data = json.loads(story) 
+            for _ in range(max_retries):
+                try:
+                    story_data = json.loads(story) 
+                    return {'data': story_data, 'flag': True}
+                except json.JSONDecodeError as e:
+                    print(f"JSON decoding failed: {e}. Retrying...")
+                    response = model.generate_content(prompt)  
+                    story = response.text
+            
+            return {'message': 'Failed to parse JSON after retries', 'error': str(e), 'flag': False, 'data': {}}
         else:
-            story_data = story
-        
+            return {'data': story, 'flag': True}
+
     except Exception as e:
-        return {'message':'something went wrong','error':str(e),'flag':False,'data':{}}
-    return {'data':story_data,'flag':True}
+        print(f"Error: {e}")
+        return {'message': 'Something went wrong', 'error': str(e), 'flag': False, 'data': {}}
