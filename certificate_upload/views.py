@@ -10,6 +10,7 @@ from rest_framework.generics import ListAPIView
 from authentication.serializers import StudentSerializer
 from authentication.models import Student
 from django.shortcuts import get_object_or_404
+from authentication.permissions import *
 # Local imports
 from .serializers import CertificateSerializer
 from chatbot.utils import gemini_ai 
@@ -72,8 +73,13 @@ class CertificateUploadView(APIView):
 
 ## Function to upload activity certificates
 class UploadActivityCertificates(APIView):
+    permission_classes=[IsStudent]
     def post(self,request,*args,**kwargs):
-        serializer=ActivityCertificateSerializer(data=request.data)
+        print("Received Data:", request.data)  # Debugging
+        data=request.data.copy()
+        student=get_object_or_404(Student,profile__id=request.user.id)
+        data['student']=student.id
+        serializer=ActivityCertificateSerializer(data=data)
         if serializer.is_valid():
             activity_certificate=serializer.save()
             
@@ -86,8 +92,10 @@ class UploadActivityCertificates(APIView):
                 
             activity_certificate.extracted_text = text
             activity_certificate.save()
-            
+    
             return Response(ActivityCertificateSerializer(activity_certificate).data,status=status.HTTP_201_CREATED)
+        else:
+            print(serializer.errors)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -106,8 +114,8 @@ class CertificateListView(APIView):
 
 ## Function to get a single certificate
 class CertificateDetailView(APIView):
-    def get(self,request,pk):
-        certificate=Certificate.objects.get(id=pk)
+    def get(self,request,uuid):
+        certificate=Certificate.objects.get(uuid=uuid)
         serializer=CertificateSerializer(certificate)
         if serializer:
             return Response(serializer.data,status=status.HTTP_200_OK)
@@ -205,3 +213,5 @@ class AcademicGraph(APIView):
         total_marks = activity_data['total_marks'] or 0
         certificate_count = activity_data['certificate_count']
         return Response({'grades':grades,'total_marks':total_marks,'certificate_count':certificate_count,'academic_certificate':academic_certificate},status=status.HTTP_200_OK)
+    
+            
