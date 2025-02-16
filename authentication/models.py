@@ -106,3 +106,17 @@ class Teacher(BaseClass):
         ordering = ['-created_at']
         verbose_name = 'Teacher'
         verbose_name_plural = 'Teachers'
+
+
+class OTP(BaseClass):
+    profile = models.OneToOneField(Profile, on_delete=models.CASCADE, related_name='otp')
+    otp = models.CharField(max_length=6)
+    expiry = models.DateTimeField()
+
+    def __str__(self):
+        return f"{self.profile.email} - {self.otp}"
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'OTP'
+        verbose_name_plural = 'OTPs'

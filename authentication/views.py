@@ -97,10 +97,8 @@ class StudentRegistrationAPIView(APIView):
                     'username': father_email
                 }
             )
-            if not created:  # If father profile exists but data is incomplete, return error
-                return Response({'message': 'Father profile already exists with the provided email.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        print('name',name)
+ 
+        # print('name',name)
         # Create student profile
         profile_data = {
             'email': email,
@@ -137,10 +135,8 @@ class StudentRegistrationAPIView(APIView):
             student_profile.delete()  # Rollback profile creation if serializer fails
             return Response(student_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Save the student data
         student = student_serializer.save()
 
-        # Return successful response with student data
         data = {
             'student': student_serializer.data
         }
@@ -148,56 +144,55 @@ class StudentRegistrationAPIView(APIView):
         return Response({'data': data}, status=status.HTTP_201_CREATED)
 
 
-## parent registration 
+
 class ParentRegistrationAPIView(APIView):
     def post(self, request):
         email = request.data.get('email')
         if not email:
             return Response({'message': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        profile_data = {
-            'email': email,
-            'password': request.data.get('password'),
-            'role': RoleChoices.PARENT,
-            'phone': request.data.get('phone'),
-            'username': email
-        }
-
-        # Check if email already exists
-        if Profile.objects.filter(email=profile_data['email']).exists():
-            return Response({'message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Create parent profile
         try:
-            parent_profile = Profile.objects.create_user(**profile_data)
+            profile = Profile.objects.filter(email=email).first()
+            parent = Parent.objects.filter(profile=profile).first()
+
+            if parent:
+                return Response({'message': 'Parent with this email is already registered. Please log in.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if not profile:
+                profile_data = {
+                    'email': email,
+                    'password': request.data.get('password'),
+                    'role': RoleChoices.PARENT,
+                    'phone': request.data.get('phone'),
+                    'username': email
+                }
+                
+                profile = Profile.objects.create_user(**profile_data)
+
+            parent_data = {
+                'profile': profile.id,
+                'first_name': request.data.get('first_name'),
+                'last_name': request.data.get('last_name'),
+                'programme': request.data.get('programme'),
+                'department': request.data.get('department'),
+                'year': request.data.get('year'),
+                'occupation': request.data.get('occupation'),
+                'address': request.data.get('address'),
+                'city': request.data.get('city'),
+                'state': request.data.get('state'),
+                'pincode': request.data.get('pincode'),
+                'relationship': request.data.get('relationship'),
+            }
+
+            parent_serializer = ParentSerializer(data=parent_data)
+            if not parent_serializer.is_valid():
+                return Response(parent_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            parent_serializer.save()
+            return Response({'message': 'Parent registered successfully'}, status=status.HTTP_201_CREATED)
+
         except Exception as e:
-            return Response({'message': f'Error creating profile: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
-
-        parent_data = {
-            'profile': parent_profile.id,
-            'first_name': request.data.get('first_name'),
-            'last_name': request.data.get('last_name'),
-            'programme': request.data.get('programme'),
-            'department': request.data.get('department'),
-            'year': request.data.get('year'),
-            'occupation': request.data.get('occupation'),
-            'address': request.data.get('address'),
-            'city': request.data.get('city'),
-            'state': request.data.get('state'),
-            'pincode': request.data.get('pincode'),
-            'relationship': request.data.get('relationship'),
-        }
-
-        # Serialize and validate data
-        parent_serializer = ParentSerializer(data=parent_data)
-        if not parent_serializer.is_valid():
-            parent_profile.delete()  # Rollback if validation fails
-            return Response(parent_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        # Save parent data
-        parent_serializer.save()
-
-        return Response({'message': 'Parent registered successfully'}, status=status.HTTP_201_CREATED)
+            return Response({'message': f'Error: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
     
 
 ##teacher registration
