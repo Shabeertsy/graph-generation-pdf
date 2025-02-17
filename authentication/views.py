@@ -164,9 +164,16 @@ class ParentRegistrationAPIView(APIView):
         try:
             profile = Profile.objects.filter(email=email).first()
             parent = Parent.objects.filter(profile=profile).first()
-
+            if profile:
+                if profile.objects.filter(email=email).exclude(role=RoleChoices.parent).exists():
+                  return Response({'message': 'Email already exists for other user role'}, status=status.HTTP_400_BAD_REQUEST)
+            
             if parent:
                 return Response({'message': 'Parent with this email is already registered. Please log in.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if profile and profile.role != RoleChoices.PARENT:
+                profile.set_password(request.data.get('password'))
+                profile.save()
 
             if not profile:
                 profile_data = {
