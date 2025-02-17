@@ -171,7 +171,7 @@ class ParentRegistrationAPIView(APIView):
             if parent:
                 return Response({'message': 'Parent with this email is already registered. Please log in.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            if profile and profile.role != RoleChoices.PARENT:
+            if profile and profile.role == RoleChoices.PARENT:
                 profile.set_password(request.data.get('password'))
                 profile.save()
 
