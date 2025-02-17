@@ -165,7 +165,7 @@ class ParentRegistrationAPIView(APIView):
             profile = Profile.objects.filter(email=email).first()
             parent = Parent.objects.filter(profile=profile).first()
             if profile:
-                if profile.objects.filter(email=email).exclude(role=RoleChoices.parent).exists():
+                if Profile.objects.filter(email=email).exclude(role=RoleChoices.PARENT).exists():
                   return Response({'message': 'Email already exists for other user role'}, status=status.HTTP_400_BAD_REQUEST)
             
             if parent:
@@ -282,7 +282,8 @@ from django.shortcuts import get_object_or_404
 class ViewParentData(APIView):
     def get(self,request):
         parent=get_object_or_404(Parent,profile=request.user)
-        student=Student.objects.filter(parent=parent)
+        student=Student.objects.filter(profile__father=parent.profile)
+        print(student)
         parent_serializer=ParentSerializer(parent)
         student_serializer=StudentSerializer(student,many=True)
         return Response({'parent':parent_serializer.data,'student':student_serializer.data})
