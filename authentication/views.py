@@ -261,3 +261,21 @@ class StudentsDetailsAPIView(APIView):
             return Response({'message':'Student not found'})
 
 
+from django.shortcuts import get_object_or_404
+class ViewParentData(APIView):
+    def get(self,request):
+        parent=get_object_or_404(Parent,profile=request.user)
+        student=Student.objects.filter(parent=parent)
+        parent_serializer=ParentSerializer(parent)
+        student_serializer=StudentSerializer(student,many=True)
+        return Response({'parent':parent_serializer.data,'student':student_serializer.data})
+
+
+class ParentDetailsByEmail(APIView):
+    def get(self,request):
+        parent=Profile.objects.filter(email=request.query_params.get('email')).first()
+        data={
+            'parent_email':parent.email,
+            'parent_phone':parent.phone,
+        }
+        return Response(data,status=status.HTTP_200_OK)
