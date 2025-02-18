@@ -215,3 +215,86 @@ class AcademicGraph(APIView):
         return Response({'grades':grades,'total_marks':total_marks,'certificate_count':certificate_count,'academic_certificate':academic_certificate},status=status.HTTP_200_OK)
     
             
+
+
+import fitz  # PyMuPDF
+import json
+import re
+from django.core.files.base import ContentFile
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.views import APIView
+from .models import Certificate, Student
+from .serializers import CertificateSerializer
+
+class CertificateBulkUploadView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        serializer = CertificateSerializer(data=request.data)
+        if serializer.is_valid():
+            certificate = serializer.save()  
+            self.extract_grades_from_pdf(certificate=certificate)
+            return Response(CertificateSerializer(certificate).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def extract_grades_from_pdf(self, certificate):
+        pdf_file_path = certificate.certificate_pdf.path
+        document = fitz.open(pdf_file_path)
+
+        for page_num in range(document.page_count):
+            page = document.load_page(page_num)
+            text = page.get_text("text") 
+            print(f"Processing page {page_num + 1}")
+
+            # Extract Register Number
+            register_number = self.extract_register_number(text)
+            print(f"Extracted Register Number: {register_number}")
+
+            single_page_pdf = fitz.open()
+            single_page_pdf.insert_pdf(document, from_page=page_num, to_page=page_num)
+
+            pdf_bytes = single_page_pdf.write()
+            pdf_file = ContentFile(pdf_bytes, name=f"certificates/{register_number}.pdf")
+
+            data_format = """
+            {
+                "course_code": "",
+                "subject": "",
+                "internal_marks": "",
+                "external_marks": "",
+                "total_marks": "",
+                "max_internal": "",
+                "max_external": "",
+                "max_total": "",
+                "percentage": "",
+                "credits": "",
+                "grade": "",
+                "status": "",
+                "sgpa":""
+            }
+            """
+
+            prompt = f"From {text}, fetch details in this format {data_format}. Must be in JSON format and data must be accurate. No additional comments or text should be there."
+
+            grade_data = gemini_ai(prompt)
+            
+            if isinstance(grade_data, dict) and grade_data.get("flag"):
+                student = Student.objects.filter(register_no=register_number).first() 
+
+                Certificate.objects.create(
+                    student=student if student else None,
+                    certificate_pdf=pdf_file,  # Save only this student's PDF
+                    grades=grade_data['data']
+                )
+
+            else:
+                print("Invalid response format:", grade_data)
+                return Response({'message': "AI returned an invalid format", 'error': grade_data}, status=status.HTTP_400_BAD_REQUEST)
+
+    def extract_register_number(self, text):
+        """Extract Register Number from the given text."""
+        pattern = r'Register\s*No\.\s*[:\-]?\s*(\w+)'  
+        match = re.search(pattern, text, re.IGNORECASE)
+        return match.group(1) if match else "Unknown"

@@ -15,4 +15,5 @@ urlpatterns = [
     path('activity-certificate-detail/',views.ActivityCertificateDetailView.as_view(),name='activity-certificate-detai'),
 
     path('academic-graph/',views.AcademicGraph.as_view(),name='academic-graph'),
+    path('certificate-bulk/',views.CertificateBulkUploadView.as_view(),name='certificate-bulk'),
 ]
