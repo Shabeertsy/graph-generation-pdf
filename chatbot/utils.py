@@ -3,7 +3,7 @@ import google.generativeai as genai
 import json
 
 
-GOOGLE_API_KEY=''
+GOOGLE_API_KEY='AIzaSyCor6MYCiblHwiuJQgMX9c4U_18T6kNlxE'
 def gemini_ai(prompt, model='gemini-pro', json_format=True, max_retries=10):
     genai.configure(api_key=GOOGLE_API_KEY)
     model = genai.GenerativeModel(model)
