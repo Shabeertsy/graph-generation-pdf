@@ -60,6 +60,7 @@ class Student(BaseClass):
     programme=models.CharField(max_length=100)
     year=models.CharField(max_length=100)
     total_activity_marks=models.FloatField(default=0)
+    register_no=models.CharField(max_length=100,null=True,blank=True)
 
     def __str__(self):
         return f"{self.profile.email} - {self.roll_number}"
