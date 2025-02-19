@@ -61,7 +61,7 @@ class ChatbotAPIView(APIView):
         
         Please provide a clear and concise answer based on the document content above.
         """
-        
+        print('eeeeeee', doc.extracted_text)
         # Using Gemini
         genai.configure(api_key=GOOGLE_API_KEY)
         model = genai.GenerativeModel('gemini-pro')
