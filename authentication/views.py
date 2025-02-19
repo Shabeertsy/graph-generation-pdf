@@ -32,12 +32,22 @@ class LoginAPIView(APIView):
 
         token=RefreshToken.for_user(user)
         role=user.role
-        data={
+        if role==RoleChoices.STUDENT:
+            student=Student.objects.get(profile=user)
+            data={
+                'token':str(token.access_token),
+                'refresh':str(token),
+                'role':role,
+                'student_id':StudentSerializer(student).data.get('id')
+            }
+        else:
+
+            data={
             'token':str(token.access_token),
             'refresh':str(token),
             'role':role
-        }
-
+            }
+       
         return Response({'data':data},status=status.HTTP_200_OK)
 
 
@@ -154,9 +164,16 @@ class ParentRegistrationAPIView(APIView):
         try:
             profile = Profile.objects.filter(email=email).first()
             parent = Parent.objects.filter(profile=profile).first()
-
+            if profile:
+                if Profile.objects.filter(email=email).exclude(role=RoleChoices.PARENT).exists():
+                  return Response({'message': 'Email already exists for other user role'}, status=status.HTTP_400_BAD_REQUEST)
+            
             if parent:
                 return Response({'message': 'Parent with this email is already registered. Please log in.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if profile and profile.role == RoleChoices.PARENT:
+                profile.set_password(request.data.get('password'))
+                profile.save()
 
             if not profile:
                 profile_data = {
@@ -265,7 +282,8 @@ from django.shortcuts import get_object_or_404
 class ViewParentData(APIView):
     def get(self,request):
         parent=get_object_or_404(Parent,profile=request.user)
-        student=Student.objects.filter(parent=parent)
+        student=Student.objects.filter(profile__father=parent.profile)
+        print(student)
         parent_serializer=ParentSerializer(parent)
         student_serializer=StudentSerializer(student,many=True)
         return Response({'parent':parent_serializer.data,'student':student_serializer.data})

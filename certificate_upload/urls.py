@@ -13,7 +13,8 @@ urlpatterns = [
     path('add-marks/',views.MarkAdd.as_view(),name='add-marks'),
     path('list-activity-certificates/',views.ActivityCertificatesListView.as_view(),name='list-activity-certificates'),
     path('activity-certificate-detail/',views.ActivityCertificateDetailView.as_view(),name='activity-certificate-detai'),
-
     path('academic-graph/',views.AcademicGraph.as_view(),name='academic-graph'),
     path('certificate-bulk/',views.CertificateBulkUploadView.as_view(),name='certificate-bulk'),
+    path('activity-mark-list/',views.ActivityCertificatesListView.as_view()),
+
 ]

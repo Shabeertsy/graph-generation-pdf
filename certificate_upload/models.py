@@ -45,3 +45,12 @@ class ActivityCertificate(BaseClass):
         ordering = ['-created_at']
         verbose_name = 'Activity Certificate'
         verbose_name_plural = 'Activity Certificates'
+
+
+class CertificateMarks(models.Model):
+    certifcate=models.ForeignKey(ActivityCertificate,on_delete=models.CASCADE,null=True,blank=True)
+    marks=models.FloatField(default=0)
+    status=models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.certifcate.student.profile.email} - {self.marks}"

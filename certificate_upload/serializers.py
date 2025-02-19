@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Certificate,ActivityCertificate
+from .models import Certificate,ActivityCertificate,CertificateMarks
 from django.db.models import Sum
 from chatbot.utils import gemini_ai
 import re
@@ -8,6 +8,12 @@ class CertificateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Certificate
         fields = ['id','uuid' ,'student', 'certificate_pdf', 'grades', 'uploaded_at']
+
+
+class CertificateMarksSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CertificateMarks
+        fields = '__all__'
 
 
 class ActivityCertificateSerializer(serializers.ModelSerializer):
