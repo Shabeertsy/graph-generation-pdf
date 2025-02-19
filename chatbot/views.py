@@ -44,7 +44,7 @@ class PDFUploadView(APIView):
 
 GOOGLE_API_KEY= config('API_KEY') if config('API_KEY') else ''
 
-class ChatbotAPIView(APIView):
+class DocChatbotAPIView(APIView):
     def post(self, request):
         data = request.data
         document_id=request.data.get('document_id')
