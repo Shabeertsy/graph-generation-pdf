@@ -87,6 +87,7 @@ class StudentRegistrationAPIView(APIView):
         programme = request.data.get('programme')
         department = request.data.get('department')
         year = request.data.get('year')
+        register_no=request.data.get('register_no')
 
         # Check for missing mandatory fields
         if not email or not password or not phone or not roll_number or not date_of_birth:
@@ -137,6 +138,8 @@ class StudentRegistrationAPIView(APIView):
             'programme': programme,
             'department': department,
             'year': year,
+            'register_no':register_no
+            
         }
 
         # Serialize student data

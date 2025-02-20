@@ -18,3 +18,4 @@ urlpatterns = [
     path('activity-mark-list/',views.ActivityCertificatesListView.as_view()),
 
 ]
+
